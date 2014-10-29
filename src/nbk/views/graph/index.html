@@ -8,6 +8,19 @@
         <link rel="stylesheet" href="/css/style.css" type="text/css">
     </head>
     <body>
+        <code>${json}</code>
+
+
+
+
+
+
+
+
+
+
+
+
         <canvas id="viewport" width="800" height="600"></canvas>
 
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.js"></script>
@@ -139,6 +152,8 @@
                     var sys = arbor.ParticleSystem(1000, 600, 0.5) // create the system with sensible repulsion/stiffness/friction
                     sys.parameters({gravity:true}) // use center-gravity to make the graph settle nicely (ymmv)
                     sys.renderer = Renderer("#viewport") // our newly created renderer will have its .init() method called shortly by sys...
+
+                    // ${json}
 
                     //var json = JSON.parse("${json}");
 

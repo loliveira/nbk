@@ -1,6 +1,7 @@
 (ns nbk.http
   (:require [org.httpkit.server :refer [run-server]]
             [ring.middleware.reload :refer [wrap-reload]]
+            [ring.middleware.params :refer [wrap-params]]
             [ring.middleware.stacktrace :refer [wrap-stacktrace]]
             [com.stuartsierra.component :as component]
             [nbk.routes :refer [main-routes]]
@@ -18,7 +19,7 @@
 
 
 
-(defrecord HttpServer []
+(defrecord HttpServer [port]
   component/Lifecycle
   (start [{server :server graph :graph :as component}]
          (if server
@@ -28,8 +29,9 @@
              (->> (run-server (-> main-routes
                                   wrap-reload
                                   wrap-stacktrace
+                                  (wrap-params :query-params :form-params :params)
                                   (wrap-graph-component graph))
-                              {:port 4000})
+                              {:port port})
                   (assoc component :server)))))
   (stop [{server :server :as component}]
         (if (not server)
@@ -39,5 +41,5 @@
             (server)
             (assoc component :server nil)))))
 
-(defn new-http-server [args]
-  (map->HttpServer args))
+(defn new-http-server [{port :port}]
+  (map->HttpServer {:port port}))

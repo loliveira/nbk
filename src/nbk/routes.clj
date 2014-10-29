@@ -5,9 +5,7 @@
             [compojure.handler :as handler]
             [compojure.response :as response]
 
-            [nbk.views.graph.routes]
-
-            ))
+            [nbk.views.graph.routes]))
 
 
 (defroutes main-routes

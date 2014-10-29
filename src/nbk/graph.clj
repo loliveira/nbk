@@ -10,37 +10,25 @@
 
 (timbre/refer-timbre)
 
-;(timbre/set-level! :info)
 
-
-
-
-
-
-; we use a set to keep the edges. a map could be used
-; if the edges have weigth.
-
-(defn- add-edge-impl [g v1 v2]
+(defn- conect-vertices [g v1 v2]
   (-> g
       (update-in [v1] #(if % % #{}))
       (update-in [v1] conj v2)))
 
 
-(defn add-edge "Edges are bidirectional"
-  [g v1 v2]
+(defn- add-edge-impl [g v1 v2]
   {:pre [(map? g)]}
   (-> g
-      (add-edge-impl v1 v2)
-      (add-edge-impl v2 v1)))
+      (conect-vertices v1 v2)
+      (conect-vertices v2 v1)))
 
 
 (defn get-vertices [g]
-  (reduce (fn [acc [k v]]
-            (-> (conj v k)
-                (set/union acc))) #{} g))
+  (keys g))
 
 
-(defn shortest-path [prev from to]
+(defn- shortest-path [prev from to]
   (if (every? prev [from to])
     (loop [cur to
            r (list cur)]
@@ -50,7 +38,7 @@
         r))
     '()))
 
-(defn- dijkstra-impl [g from to]
+(defn dijkstra-impl [g from to]
   (loop [queue (priority-map from 0)
          dist {}
          prev {from :no_prev}
@@ -76,14 +64,13 @@
           new-dist (merge dist new-queue)
           new-prev (->> (mapcat (fn [[v {:keys [prev]}]] [v prev]) outra-coisa)
                         (apply hash-map)
-                        (merge prev))
-          ]
+                        (merge prev))]
       (if (or (empty? new-queue) (prev to))
         prev
         (do
           (debug "new-queue - " new-queue)
           (recur new-queue new-dist new-prev
-                   (conj scanned u)))))))
+                 (conj scanned u)))))))
 
 (defn dijkstra [g from to]
   (debug "dijkstra - " from " -> " to)
@@ -98,24 +85,11 @@
 
 
 
-(defn read-graph-file [path]
-  (with-open [rdr (clojure.java.io/reader path)]
-    (reduce conj [] (line-seq rdr))))
-
-(defn parse-line [line]
-  (->> (s/split line #"\s")
-       (map #(Integer/parseInt %))))
-
-(defn load-graph [path]
-  (->> (read-graph-file path)
-       (map parse-line)
-       (reduce (fn [g [v1 v2]]
-                 (add-edge g v1 v2)) {})))
-
 (defn min-val [& args]
   (reduce (fn [[mk mv] [k v]]
             (if (< v mv) [k v] [mk mv]))
           args))
+
 
 
 (defn farness-impl
@@ -126,49 +100,81 @@
   ([g] (->> (get-vertices g)
             (pmap #(vector % (farness-impl g %))))))
 
-
-(defn closenes-impl [g]
+(defn central-vertex-impl [g]
   (->> (farness-impl g)
-       (apply min-val)))
+       (apply min-val)
+       first))
 
+
+(defn read-graph-file [path]
+  (with-open [rdr (clojure.java.io/reader path)]
+    (reduce conj [] (line-seq rdr))))
+
+(defn parse-line [line]
+  (->> (s/split line #"\s")
+       (map #(Integer/parseInt %))))
+
+(defn load-graph-impl [path]
+  (->> (read-graph-file path)
+       (map parse-line)
+       (reduce (fn [g [v1 v2]]
+                 (add-edge-impl g v1 v2)) {})))
 
 
 (defprotocol GraphApi
-  (farness [g] [g v]))
-
-
-
+  (load-from-file [component path])
+  (add-edge [component v1 v2])
+  (reset [component])
+  (central-vertex [component]))
 
 
 (defrecord Graph []
   component/Lifecycle
   GraphApi
-  (start [{graph :graph :as component}]
-         (debug "start graph - " component)
-         (if graph
-           component
-           (do
-             (debug "starting graph")
-             (assoc component :graph (load-graph "resources/edges")))))
-  (stop [{graph :graph :as component}]
-        (debug "stop graph - " component)
-        (if (not graph)
+  (start [component]
+         component)
+  (stop [{g :g :as component}]
+        (if (not g)
           component
-          (do
-            (debug "stoping graph")
-            (assoc component :graph nil))))
-  (farness [{g :graph}]
-       (farness-impl g))
+          (assoc component :g nil)))
+  (load-from-file [{g :g} path]
+                  (reset! g (load-graph-impl path)))
+  (add-edge [{g :g} v1 v2]
+            (swap! g add-edge-impl v1 v2))
 
-
+  (reset [{g :g}]
+         (reset! g {}))
+  (central-vertex [{g :g}]
+         (central-vertex-impl @g))
   )
 
-(defn new-graph []
-  (map->Graph {}))
+
+
+
+
+(defn new-graph
+  "constructor"
+  []
+  (map->Graph {:g (atom {})}))
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 (comment
+
+  (.load-graph (new-graph) "/")
 
   (-> (load-graph "resources/edges")
       (dijkstra 94 11))

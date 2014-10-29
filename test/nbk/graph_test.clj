@@ -1,6 +1,7 @@
 (ns nbk.graph-test
-  (:require [midje.sweet :refer [=> fact facts]]
-            [nbk.graph :refer :all]))
+  (:require [midje.sweet :refer [=>  throws fact facts]]
+            [nbk.graph :refer :all])
+  (:import [java.io FileNotFoundException]))
 
 
 (facts "about Graph..."
@@ -71,3 +72,31 @@
       (dijkstra g 1 6) => '(1 2 3 4 6)
       (dijkstra g 6 1) => '(6 4 3 2 1)))
 )
+
+
+(facts "about the api"
+  (fact  "Graph is a map"
+    (let [graph (new-graph)]
+      (.load-from-file graph "resources/edges") => map?))
+
+  (fact  "Throws if not found"
+    (let [graph (new-graph)]
+      (.load-from-file graph "not_found.txt") => (throws  FileNotFoundException)))
+
+  (fact "Finding the central vertex"
+    (let [graph (new-graph)]
+      (.add-edge graph 1 2)
+      (.add-edge graph 2 3)
+
+      (.central-vertex graph) => 2
+
+      (.add-edge graph 3 4)
+      (.add-edge graph 3 5)
+
+      (.central-vertex graph) => 3))
+
+
+
+
+
+
