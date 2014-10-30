@@ -18,8 +18,11 @@ Foi utilizada a linguagem Clojure.
   Indique o caminho de um arquivo em disco contendo todos as ligações entre vértices, uma por linha.
 
   Exemplo do arquivo:
+  
   1 2
+  
   2 3
+  
   1 3
 
 ###Retorno:
