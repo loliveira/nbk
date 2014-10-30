@@ -1,5 +1,4 @@
 (ns nbk.routes
-  (:use [ring.middleware.json :only (wrap-json-response wrap-json-params)])
   (:require [compojure.core :refer [GET defroutes context]]
             [compojure.route :as route]
             [compojure.handler :as handler]

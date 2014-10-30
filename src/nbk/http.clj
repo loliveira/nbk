@@ -1,16 +1,14 @@
 (ns nbk.http
   (:require [org.httpkit.server :refer [run-server]]
             [ring.middleware.reload :refer [wrap-reload]]
-            [ring.middleware.params :refer [wrap-params]]
             [ring.middleware.stacktrace :refer [wrap-stacktrace]]
+            [ring.middleware.json :refer [wrap-json-response wrap-json-params]]
+            [ring.middleware.defaults :refer [site-defaults]]
             [com.stuartsierra.component :as component]
             [nbk.routes :refer [main-routes]]
-            ;[nbk.graph :as graph]
             [taoensso.timbre :as timbre]))
 
 (timbre/refer-timbre)
-
-;(timbre/set-level! :info)
 
 
 (defn wrap-graph-component [handler graph]
@@ -27,9 +25,10 @@
            (do
              (debug "starting http server." )
              (->> (run-server (-> main-routes
+                                  wrap-json-response
+                                  wrap-json-params
                                   wrap-reload
                                   wrap-stacktrace
-                                  (wrap-params :query-params :form-params :params)
                                   (wrap-graph-component graph))
                               {:port port})
                   (assoc component :server)))))

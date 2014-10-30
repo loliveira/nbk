@@ -11,17 +11,17 @@
 (timbre/refer-timbre)
 
 
-(defn- conect-vertices [g v1 v2]
+(defn- connect-vertices [g v1 v2]
   (-> g
       (update-in [v1] #(if % % #{}))
       (update-in [v1] conj v2)))
 
 
-(defn- add-edge-impl [g v1 v2]
+(defn add-edge-impl [g v1 v2]
   {:pre [(map? g)]}
   (-> g
-      (conect-vertices v1 v2)
-      (conect-vertices v2 v1)))
+      (connect-vertices v1 v2)
+      (connect-vertices v2 v1)))
 
 
 (defn get-vertices [g]
@@ -50,19 +50,19 @@
 
     (let [[u distance] (peek queue)
           neighbors (g u)
-          _ (debug "neighbors - " neighbors)
-          outra-coisa (->> neighbors
+          _ (trace "neighbors - " neighbors)
+          unvisited (->> neighbors
                            (filter (comp not scanned))
                            (map #(let [alt (inc distance)]
                                    (if (< alt (get dist % Integer/MAX_VALUE))
                                      [% {:distance alt :prev u}])))
                            (filter identity))
-          _ (debug "outra-coisa - " outra-coisa)
-          new-queue (->> (mapcat (fn [[v {:keys [distance]}]] [v distance]) outra-coisa)
+          _ (trace "unvisited - " unvisited)
+          new-queue (->> (mapcat (fn [[v {:keys [distance]}]] [v distance]) unvisited)
                          (apply priority-map)
                          (into (pop queue)))
           new-dist (merge dist new-queue)
-          new-prev (->> (mapcat (fn [[v {:keys [prev]}]] [v prev]) outra-coisa)
+          new-prev (->> (mapcat (fn [[v {:keys [prev]}]] [v prev]) unvisited)
                         (apply hash-map)
                         (merge prev))]
       (if (or (empty? new-queue) (prev to))
@@ -91,7 +91,6 @@
           args))
 
 
-
 (defn farness-impl
   ([g v] (->> (get-vertices g)
               (map (partial dijkstra g v))
@@ -100,7 +99,7 @@
   ([g] (->> (get-vertices g)
             (pmap #(vector % (farness-impl g %))))))
 
-(defn central-vertex-impl [g]
+(defn central-vertex [g]
   (->> (farness-impl g)
        (apply min-val)
        first))
@@ -125,67 +124,41 @@
   (load-from-file [component path])
   (add-edge [component v1 v2])
   (reset [component])
-  (central-vertex [component]))
+  (closest [component])
+  )
 
 
 (defrecord Graph []
   component/Lifecycle
   GraphApi
-  (start [component]
-         component)
+  clojure.lang.IDeref
+
+  (start [component] component)
+
   (stop [{g :g :as component}]
         (if (not g)
           component
-          (assoc component :g nil)))
+    (assoc component :g nil)))
+
   (load-from-file [{g :g} path]
-                  (reset! g (load-graph-impl path)))
+    (reset! g (load-graph-impl path)))
+
   (add-edge [{g :g} v1 v2]
-            (swap! g add-edge-impl v1 v2))
+    (swap! g add-edge-impl v1 v2))
 
   (reset [{g :g}]
-         (reset! g {}))
-  (central-vertex [{g :g}]
-         (central-vertex-impl @g))
-  )
+    (reset! g {}))
 
+  (closest [{g :g}]
+    (central-vertex @g))
 
-
+  (deref [{g :g}] @g))
 
 
 (defn new-graph
   "constructor"
   []
   (map->Graph {:g (atom {})}))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(comment
-
-  (.load-graph (new-graph) "/")
-
-  (-> (load-graph "resources/edges")
-      (dijkstra 94 11))
-
-  (->> (load-graph "resources/edges")
-       farness
-       (sort-by second))
-
-  (closenes (load-graph "resources/edges"))
-
-  )
 
 
 

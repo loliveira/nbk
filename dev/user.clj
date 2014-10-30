@@ -5,12 +5,7 @@
 
 (timbre/refer-timbre)
 
-(def new-system nbk-system)
-
 (def system nil)
-
-
-
 
 
 (defn init []
@@ -28,6 +23,7 @@
   (init)
   (start)
   )
+
 
 
 

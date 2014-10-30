@@ -1,3 +1,2 @@
 (ns nbk.core-test
-  (:require [midje.sweet :refer [=> fact facts]]
-            ))
+  (:require [midje.sweet :refer [=> fact facts]]))

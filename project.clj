@@ -9,6 +9,7 @@
                  [http-kit "2.1.19"]
                  [javax.servlet/servlet-api "2.5"]
 
+                 [ring/ring-defaults "0.1.2"]
                  [ring/ring-core "1.3.1"]
                  [ring/ring-json "0.3.1"]
                  [ring/ring-devel "1.3.1"]
@@ -21,6 +22,7 @@
 
                  [enlive "1.1.5"]
                  [cheshire "5.3.1"]
+                 [clj-http "1.0.1"]
 
                  ]
   :profiles {:dev {:plugins [[lein-midje "3.1.1"]]
