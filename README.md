@@ -18,11 +18,11 @@ Foi utilizada a linguagem Clojure.
   Indique o caminho de um arquivo em disco contendo todos as ligações entre vértices, uma por linha.
 
   Exemplo do arquivo:
-  
+
   1 2
-  
+
   2 3
-  
+
   1 3
 
 ###Retorno:
@@ -36,8 +36,7 @@ Foi utilizada a linguagem Clojure.
 ###Parametro:
   Um RAW com o JSON indicando a ligação entre cada vertices.
 
-  Exemplo de parametro:
-  {v1:1, v:2}
+  Exemplo de parametro: {v1:1, v:2}
 
   No exemplo acima foi indicado que o vértice 1 APONTA para vértice 4, e vise-versa ou seja 1 <=> 4.
 
@@ -88,3 +87,8 @@ E depois execute a função go:
 
      user=> (go)
      #<SystemMap>
+
+
+
+
+
