@@ -36,7 +36,7 @@ Foi utilizada a linguagem Clojure.
 ###Parametro:
   Um RAW com o JSON indicando a ligação entre cada vertices.
 
-  Exemplo de parametro: {v1:1, v:2}
+  Exemplo de parametro: {v1:1, v2:4}
 
   No exemplo acima foi indicado que o vértice 1 APONTA para vértice 4, e vise-versa ou seja 1 <=> 4.
 
