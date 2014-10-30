@@ -73,3 +73,15 @@ Foi utilizada a linguagem Clojure.
 Os testes estão no namespace nbk.graph-test. Execute no terminal o seguinte comando:
 
 	lein midje
+
+
+## Servidor Http
+
+Para subir o servidor http, abra o repl:
+
+    lein repl
+
+E depois execute a função go:
+
+     user=> (go)
+     #<SystemMap>

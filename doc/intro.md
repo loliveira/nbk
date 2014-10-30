@@ -1,7 +1,5 @@
 # Introduction to nbk
 
-TODO: write [great documentation](http://jacobian.org/writing/what-to-write/)
-
 
 In this challenge, suppose we are looking to do social network
 analysis for prospective customers. We want to extract from
