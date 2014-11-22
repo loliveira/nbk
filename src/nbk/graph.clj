@@ -11,10 +11,14 @@
 (timbre/refer-timbre)
 
 
-(defn- connect-vertices [g v1 v2]
+(defn- connect-vertices-old [g v1 v2]
   (-> g
       (update-in [v1] #(if % % #{}))
       (update-in [v1] conj v2)))
+
+(defn- connect-vertices [g v1 v2]
+  (update-in g [v1] (fnil #(conj % v2) #{})))
+
 
 
 (defn add-edge-impl [g v1 v2]
@@ -38,14 +42,13 @@
         r))
     '()))
 
+
 (defn dijkstra-impl [g from to]
   (loop [queue (priority-map from 0)
-         dist {}
-         prev {from :no_prev}
+         dist {from 0}
          scanned #{}]
     (debug "loop ->>>>> queue - " queue)
     (debug "dist - " dist)
-    (debug "prev - " prev)
     (debug "scanned - " scanned)
 
     (let [[u distance] (peek queue)
@@ -55,31 +58,24 @@
                            (filter (comp not scanned))
                            (map #(let [alt (inc distance)]
                                    (if (< alt (get dist % Integer/MAX_VALUE))
-                                     [% {:distance alt :prev u}])))
+                                     [% {:distance alt}])))
                            (filter identity))
           _ (trace "unvisited - " unvisited)
           new-queue (->> (mapcat (fn [[v {:keys [distance]}]] [v distance]) unvisited)
                          (apply priority-map)
                          (into (pop queue)))
-          new-dist (merge dist new-queue)
-          new-prev (->> (mapcat (fn [[v {:keys [prev]}]] [v prev]) unvisited)
-                        (apply hash-map)
-                        (merge prev))]
-      (if (or (empty? new-queue) (prev to))
-        prev
+          new-dist (merge dist new-queue)]
+      (if (or (empty? new-queue) (new-dist to))
+        (new-dist to)
         (do
           (debug "new-queue - " new-queue)
-          (recur new-queue new-dist new-prev
+          (recur new-queue new-dist
                  (conj scanned u)))))))
 
 (defn dijkstra [g from to]
   (debug "dijkstra - " from " -> " to)
-  (-> (if (every? g [from to])
-        (dijkstra-impl g from to)
-        {})
-      (shortest-path from to)))
-
-
+  (if (every? g [from to])
+    (dijkstra-impl g from to)))
 
 
 
@@ -94,7 +90,6 @@
 (defn farness-impl
   ([g v] (->> (get-vertices g)
               (map (partial dijkstra g v))
-              (map count)
               (apply +)))
   ([g] (->> (get-vertices g)
             (pmap #(vector % (farness-impl g %))))))
